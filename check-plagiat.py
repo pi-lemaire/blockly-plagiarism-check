@@ -6,11 +6,7 @@ from lxml import etree, objectify
 from chardet.universaldetector import UniversalDetector
 
 
-
-#analyzeDir =  'testfiles'
-#analyzeDir =  'testfiles2'
-#analyzeDir =  '1J05D021-TD-Pierre-Lemaire-Rendu TD n°5 - Exercice 1-18730'
-analyzeDir = "fichiers BK PL/exo3"
+analyzeDir = "test_folder"
 
 studentNames = []
 variableNames = []
