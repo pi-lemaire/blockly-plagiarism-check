@@ -7,12 +7,11 @@ from chardet.universaldetector import UniversalDetector
 
 
 
-#analyzeDir =  'testfiles'
-#analyzeDir =  'testfiles2'
-#analyzeDir =  '1J05D021-TD-Pierre-Lemaire-Rendu TD n°5 - Exercice 1-18730'
 #analyzeDir = "S1-Eval2/exercice 2"
 analyzeDir = sys.argv[1]
 prefixSubject = "1J05"
+
+
 
 studentNames = []
 teacherNames = []
@@ -25,6 +24,7 @@ errorTypes = []
 detector = UniversalDetector()
 
 
+# record the number of files analyzed in case there was some mistake somewhere
 nbFilesAnalyzed = 0
 
 
@@ -70,46 +70,63 @@ for f in Path(analyzeDir).walkfiles():
             if detector.done: break
     detector.close()
     fileEncoding = detector.result['encoding']
-    #
-    #
+    
+    
     if fileEncoding==None:
         print("######## ERREUR : encodage non detecte")
         errorsNames.append(displayName)
         errorTypes.append('encodage non detecte')
         continue
     #print(fileEncoding)
-    #
+
     # since in some case we have some mess in the files before the actual
     # xml code starts, we load the whole file into a string, starting from
-    # the first line where we meet a '<' character at first position
+    # the first line where we meet a '<xml' tag at first position
     fullFileString = ""
+    #rtfFileCase = False
     firstRealLine=False
     correctEndToTheFile=False
+    idLine = 0
+    
     try:
         with io.open(fileUrl, encoding=fileEncoding) as ft:
             for line in ft:
+                #if line.find('{\\rtf')!=-1:
+                #    # the file is actually a rtf file, we need to remove the \ characters at the end of every line
+                #    rtfFileCase = True
+                    
                 if firstRealLine==False:
                     if line.find('<xml')!=-1:
                         firstRealLine=True
+                        # prevent the file from adding stuff that may have been pasted before the actual xml code on the first line
+                        line = line[line.find('<xml'):len(line)]
                 if firstRealLine==True:
-                    fullFileString+=line
+                    #if rtfFileCase:
+                    fullFileString += line[line.find('<'):line.rfind('>')+1]
+                    #else:
+                    #    fullFileString += line
+                    
                     if line.find('</xml')!=-1:
                         correctEndToTheFile=True
                         break
+                
+                idLine = idLine + 1
     except:
         print("######## ERREUR : lecture du fichier texte impossible")
         errorsNames.append(displayName)
         errorTypes.append('lecture du fichier texte impossible')
         continue
-    #
+    
+    
+    
     if (firstRealLine==False or correctEndToTheFile==False):
         print("######## ERREUR : pas de tag xml en debut ou en fin de fichier")
         errorsNames.append(displayName)
         errorTypes.append('pas de tag xml en debut ou en fin de fichier')
         continue
     #print(fullFileString)
-    #
-    #
+    
+    
     #### NOW LOAD THE STRING
     try:
         root = etree.fromstring(fullFileString)
@@ -118,28 +135,32 @@ for f in Path(analyzeDir).walkfiles():
         errorsNames.append(displayName)
         errorTypes.append('echec du decodage XML')
         continue
-        #
-        #### first we remove the namespace, which is really annoying
+
+    #### first we remove the namespace, which is really annoying
     for elem in root.getiterator():
         if not hasattr(elem.tag, 'find'): continue  # (1)
         i = elem.tag.find('}')
         if i >= 0:
             elem.tag = elem.tag[i+1:]
-    #
+    
     objectify.deannotate(root, cleanup_namespaces=True)
-    ####
-    #
+    
+    
     currVarNames = []
-    #### now display the variables ids
+    #### now retrieve the variables ids
     for var in root.xpath("variables/variable"):
         #print(var.get("id"))
         currVarNames.append(var.get("id"))
-    #
+    
     #print(currVarNames)
-    #
+    
+    # record what we've extracted. I used 3 separate lists, this is poor coding, whatever..
     studentNames.append(currStudentName)
     teacherNames.append(currTeacherName)
     variableNames.append(currVarNames)
+
+
+
 
 print("==============")
 print("NOMBRE TOTAL DE FICHIERS ANALYSES :")
@@ -157,6 +178,7 @@ print("==============")
 print("ANALYSE DU PLAGIAT A PARTIR DES NOMS DE VARIABLES")
 
 
+# simply try all correspondances one by one
 for i in range(0,len(studentNames)):
     for j in range(i+1,len(studentNames)):
         matchingVars = []
