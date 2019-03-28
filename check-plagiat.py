@@ -187,10 +187,11 @@ for i in range(0,len(studentNames)):
                 if varI==varJ:
                     matchingVars.append(varI)
         if len(matchingVars)>0:
-            printVar = "correspondance trouvee ! "
-            printVar += studentNames[i] + " (" + teacherNames[i] + ") - " + studentNames[j] + " (" + teacherNames[i] + ")"
-            printVar += " pour les noms de variables : "
-            print("-------------")
-            print(printVar)
-            print(matchingVars)
-            print("-------------")
+            if not (studentNames[j] == studentNames[i]):
+                printVar = "correspondance trouvee ! "
+                printVar += studentNames[i] + " (" + teacherNames[i] + ") - " + studentNames[j] + " (" + teacherNames[i] + ")"
+                printVar += " pour les noms de variables : "
+                print("-------------")
+                print(printVar)
+                print(matchingVars)
+                print("-------------")
