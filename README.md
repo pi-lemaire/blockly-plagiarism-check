@@ -9,7 +9,11 @@ Libraries used:
 - lxml ( https://lxml.de/ ) 
 - chardet ( https://pypi.org/project/chardet/ )
 
+`pip3 install Path.py`
+`pip3 install lxml`
+`pip3 install chardet`
+
 run it with
-`python check-plagiat.py [folder_to_anayze]`
+`python3 check-plagiat.py [folder_to_anayze]`
 
 A sample folder (.zip file) is provided to see how the data is supposed to be shaped
